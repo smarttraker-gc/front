@@ -128,7 +128,7 @@ const HomeScreen = ({ navigation }) => {
       );
       console.log("=======================");
 
-      navigation.navigate("WalkSreen");
+      navigation.navigate("WalkScreen");
       /* 향후 구현될 네비게이션 로직
         navigation.navigate('SelectionScreen', {
             goal,
