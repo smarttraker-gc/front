@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, Alert } from "react-native";
 import StepIndicator from "react-native-step-indicator";
 import QThird from "./questions/QThird";
 import QFourth from "./questions/QFourth";
@@ -8,37 +8,73 @@ import QFifth from "./questions/QFifth";
 import QSixth from "./questions/QSixth";
 import QFirst from "./questions/QFirst";
 import QSecond from "./questions/QSecond";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // AsyncStorage 임포트
 
 export default function FirstData({ navigation }) {
-  const [selectedLocation, setSelectedLocation] = useState("");
   const [place, setPlace] = useState([]);
   const [currentPosition, setCurrentPosition] = useState(0);
+  const [formData, setFormData] = useState({
+    gender: "",
+    height: "",
+    weight: "",
+    selectedLocation: "",
+    preferredPlace: "",
+    difficulty: "",
+    distance: "",
+  });
+
   const seoulName = Array.isArray(seoulDirectory)
     ? seoulDirectory.map((item) => item.name)
     : [];
 
   useEffect(() => {
     const selected = seoulDirectory.find(
-      (item) => item.name === selectedLocation
+      (item) => item.name === formData.selectedLocation
     );
     if (selected) {
       setPlace(selected.contents);
     } else {
       setPlace([]);
     }
-  }, [selectedLocation]);
+  }, [formData.selectedLocation]);
 
   const array = [
-    <QFirst />,
-    <QSecond />,
+    <QFirst
+      gender={formData.gender}
+      setGender={(value) => setFormData((prev) => ({ ...prev, gender: value }))}
+    />,
+    <QSecond
+      height={formData.height}
+      weight={formData.weight}
+      setHeight={(value) => setFormData((prev) => ({ ...prev, height: value }))}
+      setWeight={(value) => setFormData((prev) => ({ ...prev, weight: value }))}
+    />,
     <QThird
-      setSelectedLocation={setSelectedLocation}
-      selectedLocation={selectedLocation}
+      selectedLocation={formData.selectedLocation}
+      setSelectedLocation={(value) =>
+        setFormData((prev) => ({ ...prev, selectedLocation: value }))
+      }
       seoulName={seoulName}
     />,
-    <QFourth place={place} />,
-    <QFifth />,
-    <QSixth />,
+    <QFourth
+      place={place}
+      preferredPlace={formData.preferredPlace}
+      setPreferredPlace={(value) =>
+        setFormData((prev) => ({ ...prev, preferredPlace: value }))
+      }
+    />,
+    <QFifth
+      difficulty={formData.difficulty}
+      setDifficulty={(value) =>
+        setFormData((prev) => ({ ...prev, difficulty: value }))
+      }
+    />,
+    <QSixth
+      distance={formData.distance}
+      setDistance={(value) =>
+        setFormData((prev) => ({ ...prev, distance: value }))
+      }
+    />,
   ];
 
   const handleNext = () => {
@@ -53,34 +89,115 @@ export default function FirstData({ navigation }) {
     }
   };
 
+  const handleFinish = async () => {
+    // AsyncStorage에서 인증 토큰을 가져옴
+    const token = await AsyncStorage.getItem("authToken");
+
+    if (!token) {
+      Alert.alert(
+        "Error",
+        "Authentication token not found. Please login again."
+      );
+      return;
+    }
+
+    const surveyData = {
+      survey: {
+        gender: formData.gender,
+        height: formData.height,
+        weight: formData.weight,
+        location: formData.selectedLocation,
+        preferred_spot: formData.preferredPlace,
+        difficulty: formData.difficulty,
+        distance: formData.distance,
+      },
+    };
+
+    try {
+      const response = await fetch(
+        "http://210.102.178.98:60032/api/survey/submit",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // 인증 토큰을 헤더에 포함
+          },
+          body: JSON.stringify(surveyData),
+        }
+      );
+
+      const data = await response.json();
+      if (data.message === "Survey submitted successfully.") {
+        Alert.alert("Success", "Survey submitted successfully!");
+        navigation.navigate("HomeScreen");
+      } else {
+        Alert.alert("Error", "There was an issue submitting the survey.");
+      }
+    } catch (error) {
+      console.error("Error submitting survey:", error);
+      Alert.alert("Error", "An error occurred. Please try again later.");
+    }
+  };
+  const submitSurvey = async (token, surveyData) => {
+    try {
+      const response = await fetch(
+        "http://210.102.178.98:60032/api/survey/submit",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(surveyData),
+        }
+      );
+
+      if (response.status === 401) {
+        Alert.alert(
+          "Unauthorized",
+          "Token is invalid or expired. Please log in again."
+        );
+        // 토큰 갱신 또는 로그인을 유도하는 로직 추가
+      } else if (response.ok) {
+        const data = await response.json();
+        Alert.alert("Success", "Survey submitted successfully!");
+      } else {
+        Alert.alert("Error", "There was an issue submitting the survey.");
+      }
+    } catch (error) {
+      console.error("Error submitting survey:", error);
+      Alert.alert("Error", "An error occurred. Please try again later.");
+    }
+  };
+
   const customStyles = {
-    stepIndicatorSize: 30, // 기본 동그라미 크기
-    currentStepIndicatorSize: 40, // 현재 동그라미 크기
-    separatorStrokeWidth: 2, // 연결선 두께
-    currentStepStrokeWidth: 3, // 현재 동그라미 테두리 두께
+    stepIndicatorSize: 30,
+    currentStepIndicatorSize: 40,
+    separatorStrokeWidth: 2,
+    currentStepStrokeWidth: 3,
     stepStrokeWidth: 3,
     stepStrokeCurrentColor: "#c9c9c9",
-    stepStrokeFinishedColor: "#A3B4FA", // 완료된 동그라미 테두리 색상
-    stepStrokeUnFinishedColor: "#c9c9c9", // 미완료 동그라미 테두리 색상
-    separatorFinishedColor: "#A3B4FA", // 완료된 연결선 색상
-    separatorUnFinishedColor: "#aaaaaa", // 미완료 연결선 색상
-    stepIndicatorFinishedColor: "#A3B4FA", // 완료된 동그라미 배경색
-    stepIndicatorUnFinishedColor: "#ffffff", // 미완료 동그라미 배경색
-    stepIndicatorCurrentColor: "#A3B4FA", // 현재 동그라미 배경색
-    stepIndicatorLabelFontSize: 15, // 동그라미 내부 글자 크기
-    currentStepIndicatorLabelFontSize: 15, // 현재 동그라미 내부 글자 크기
-    stepIndicatorLabelCurrentColor: "#ffffff", // 현재 동그라미 내부 글자 색상
-    stepIndicatorLabelFinishedColor: "#ffffff", // 완료된 동그라미 내부 글자 색상
-    stepIndicatorLabelUnFinishedColor: "#aaaaaa", // 미완료 동그라미 내부 글자 색상
-    labelColor: "#999999", // 동그라미 아래 텍스트 색상
+    stepStrokeFinishedColor: "#A3B4FA",
+    stepStrokeUnFinishedColor: "#c9c9c9",
+    separatorFinishedColor: "#A3B4FA",
+    separatorUnFinishedColor: "#aaaaaa",
+    stepIndicatorFinishedColor: "#A3B4FA",
+    stepIndicatorUnFinishedColor: "#ffffff",
+    stepIndicatorCurrentColor: "#A3B4FA",
+    stepIndicatorLabelFontSize: 15,
+    currentStepIndicatorLabelFontSize: 15,
+    stepIndicatorLabelCurrentColor: "#ffffff",
+    stepIndicatorLabelFinishedColor: "#ffffff",
+    stepIndicatorLabelUnFinishedColor: "#aaaaaa",
+    labelColor: "#999999",
     labelSize: 13,
-    currentStepLabelColor: "#A3B4FA", // 현재 단계 아래 텍스트 색상
+    currentStepLabelColor: "#A3B4FA",
   };
 
   return (
     <View style={styles.appContainer}>
       <StepIndicator
-        key={currentPosition} // 렌더링 강제 업데이트
+        key={currentPosition}
         customStyles={customStyles}
         currentPosition={currentPosition}
         stepCount={array.length}
@@ -99,32 +216,22 @@ export default function FirstData({ navigation }) {
           <Text style={styles.buttonText}>이전</Text>
         </TouchableOpacity>
 
-        {currentPosition === array.length - 1 ? (
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#A3B4FA" }]}
-          >
-            <Text
-              style={styles.buttonText}
-              onPress={() => navigation.navigate("HomeSreen")}
-            >
-              종료
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[
-              styles.button,
-              {
-                backgroundColor:
-                  currentPosition === array.length - 1 ? "#ccc" : "#A3B4FA",
-              },
-            ]}
-            onPress={handleNext}
-            disabled={currentPosition === array.length - 1}
-          >
-            <Text style={styles.buttonText}>다음</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[
+            styles.button,
+            {
+              backgroundColor:
+                currentPosition === array.length - 1 ? "#A3B4FA" : "#A3B4FA",
+            },
+          ]}
+          onPress={
+            currentPosition === array.length - 1 ? handleFinish : handleNext
+          }
+        >
+          <Text style={styles.buttonText}>
+            {currentPosition === array.length - 1 ? "종료" : "다음"}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -150,6 +257,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
+    width: "48%",
   },
   buttonText: {
     color: "#fff",

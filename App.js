@@ -30,12 +30,12 @@ function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="HomeSreen"
+          name="HomeScreen"
           component={HomeScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="WalkSreen"
+          name="WalkScreen"
           component={WalkScreen}
           options={{ headerShown: false }}
         />

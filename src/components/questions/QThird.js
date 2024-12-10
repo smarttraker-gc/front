@@ -18,9 +18,11 @@ export default function QThird({
   const [searchText, setSearchText] = useState("");
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
-  const filteredOptions = seoulName.filter((option) =>
-    option.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredOptions = searchText
+    ? seoulName.filter((option) =>
+        option.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : seoulName;
 
   const handleSelect = (value) => {
     setSelectedLocation(value);
@@ -36,36 +38,45 @@ export default function QThird({
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
       <View>
-        <Text>Q3. 사는 곳</Text>
+        <Text style={styles.label}>Q3. 사는 곳</Text>
 
         <View style={styles.inputContainer}>
           <TextInput
-            style={[
-              styles.searchInput,
-              selectedLocation ? styles.selectedLocation : null,
-            ]}
+            style={styles.searchInput}
             placeholder={selectedLocation || "사는 곳을 선택하세요"}
             placeholderTextColor={selectedLocation ? "black" : "#ccc"}
             value={searchText}
             onFocus={() => setDropdownOpen(true)}
-            onChangeText={setSearchText}
+            onChangeText={(text) => {
+              setSearchText(text);
+              setDropdownOpen(true);
+            }}
           />
         </View>
 
         {isDropdownOpen && (
           <View style={styles.dropdownContainer}>
-            <FlatList
-              data={filteredOptions}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.option}
-                  onPress={() => handleSelect(item)}
-                >
-                  <Text>{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
+            {filteredOptions.length > 0 ? (
+              <FlatList
+                data={filteredOptions}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.option,
+                      item === selectedLocation && styles.selectedOption,
+                    ]}
+                    onPress={() => handleSelect(item)}
+                  >
+                    <Text style={styles.optionText}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            ) : (
+              <View style={styles.noResultContainer}>
+                <Text style={styles.noResultText}>결과가 없습니다</Text>
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -74,6 +85,10 @@ export default function QThird({
 }
 
 const styles = StyleSheet.create({
+  label: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
   inputContainer: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -84,19 +99,30 @@ const styles = StyleSheet.create({
     padding: 15,
     fontSize: 16,
   },
-  selectedInput: {
-    color: "black",
-  },
   dropdownContainer: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
     marginTop: 5,
     maxHeight: 200,
+    backgroundColor: "#fff",
   },
   option: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
+  },
+  selectedOption: {
+    backgroundColor: "#A3B4FA",
+  },
+  optionText: {
+    color: "black",
+  },
+  noResultContainer: {
+    padding: 10,
+    alignItems: "center",
+  },
+  noResultText: {
+    color: "#999",
   },
 });

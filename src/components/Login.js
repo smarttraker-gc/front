@@ -1,11 +1,52 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { TextInput } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // AsyncStorage import
 
 export default function Login({ navigation }) {
   const [pwVisible, setPWVisible] = useState(false);
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch(
+        "http://210.102.178.98:60032/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: id.trim(),
+            password: password.trim(),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // 인증 토큰을 AsyncStorage에 저장
+        await AsyncStorage.setItem("authToken", data.token);
+
+        Alert.alert("로그인 성공", "환영합니다!", [
+          {
+            text: "확인",
+            onPress: () => navigation.navigate("FirstData"),
+          },
+        ]);
+      } else {
+        Alert.alert(
+          "로그인 실패",
+          data.error || "아이디와 비밀번호를 확인하세요."
+        );
+      }
+    } catch (error) {
+      Alert.alert("오류", "서버와 연결할 수 없습니다.");
+      console.error(error);
+    }
+  };
 
   return (
     <View style={styles.appContainer}>
@@ -39,16 +80,12 @@ export default function Login({ navigation }) {
       <TouchableOpacity
         style={[
           styles.customButton,
-          id && password ? styles.buttonDisabled : styles.buttonEnabled,
+          id && password ? styles.buttonEnabled : styles.buttonDisabled,
         ]}
-        disabled={!(id.trim === "" && password.trim === "")}
+        disabled={id.trim() === "" || password.trim() === ""}
+        onPress={handleLogin}
       >
-        <Text
-          style={styles.buttonText}
-          onPress={() => navigation.navigate("FirstData")}
-        >
-          로그인
-        </Text>
+        <Text style={styles.buttonText}>로그인</Text>
       </TouchableOpacity>
     </View>
   );
@@ -102,9 +139,9 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   buttonEnabled: {
-    backgroundColor: "#D9D9D9",
+    backgroundColor: "#A3B4FA",
   },
   buttonDisabled: {
-    backgroundColor: "#A3B4FA",
+    backgroundColor: "#D9D9D9",
   },
 });
