@@ -7,6 +7,7 @@ import FirstData from "./src/components/FirstData";
 import HomeScreen from "./screens/HomeScreen";
 import WalkScreen from "./screens/WalkScreen";
 import EndScreen from "./screens/EndScreen";
+import ChoiceScreen from "./screens/ChoiceScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +43,11 @@ function App() {
         <Stack.Screen
           name="EndScreen"
           component={EndScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChoiceScreen"
+          component={ChoiceScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

@@ -10,9 +10,9 @@ import {
 import { WebView } from "react-native-webview";
 import Icon from "@expo/vector-icons/Ionicons";
 import * as Location from "expo-location";
-// import { useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 
-/**s
+/**
  * WalkScreen 컴포넌트
  * 사용자의 실시간 운동 현황을 추적하고 표시하는 화면
  *
@@ -27,12 +27,19 @@ import * as Location from "expo-location";
  * - Kakao Maps API: 지도 및 경로 표시
  */
 
-const WalkScreen = ({ navigation }) => {
+const WalkScreen = ({ route }) => {
+  const { guideData } = route.params;
+  // 상태 관리
+  const navigation = useNavigation();
   const [elapsedTime, setElapsedTime] = useState(0); // 경과 시간 (초)
   const [distance, setDistance] = useState(0); // 이동 거리 (km)
   const [lastPosition, setLastPosition] = useState(null); // 마지막 위치 정보
   const [isPaused, setIsPaused] = useState(false); // 일시정지 상태
   const webViewRef = useRef(null); // 카카오맵 WebView 참조
+
+  //console.log("받아온 가이드 데이터:", guideData);
+  //console.log("위도", guideData.trail.latitude);
+  //console.log("경도", guideData.trail.longitude);
 
   /**
    * 카카오맵 초기화 및 업데이트를 위한 HTML 컨텐츠
@@ -125,7 +132,8 @@ const WalkScreen = ({ navigation }) => {
                                 return;
                             }
                             
-                            const position = new kakao.maps.LatLng(lat, lng);
+                           const position = [new kakao.maps.LatLng(lat, lng),
+                            new kakao.maps.LatLng(${guideData.trail.latitude}, ${guideData.trail.longitude})];
                             
                             // 이동 경로 업데이트
                             const path = window.polyline.getPath();
@@ -182,7 +190,7 @@ const WalkScreen = ({ navigation }) => {
           Alert.alert(
             "위치 서비스 비활성화",
             "기기의 위치 서비스를 켜주세요.",
-            [{ text: "확인", onPress: () => navigation.navigate("HomeScreen") }]
+            [{ text: "확인", onPress: () => navigation.goBack() }]
           );
           return;
         }
@@ -197,12 +205,7 @@ const WalkScreen = ({ navigation }) => {
             Alert.alert(
               "위치 권한 필요",
               "산책 거리를 측정하기 위해 위치 권한이 필요합니다.",
-              [
-                {
-                  text: "확인",
-                  onPress: () => navigation.navigate("HomeSreen"),
-                },
-              ]
+              [{ text: "확인", onPress: () => navigation.goBack() }]
             );
             return;
           }
@@ -255,7 +258,7 @@ const WalkScreen = ({ navigation }) => {
       } catch (err) {
         console.warn("위치 설정 오류:", err);
         Alert.alert("위치 서비스 오류", `상세 오류: ${err.message}`, [
-          { text: "확인", onPress: () => navigation.navigate("HomeSreen") },
+          { text: "확인", onPress: () => navigation.goBack() },
         ]);
       }
     };
@@ -525,9 +528,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonText: {
-    fontSize: 16,
-    color: "white",
-    fontWeight: "bold",
+    fontSize: 18,
   },
 });
 

@@ -72,7 +72,10 @@ export default function FirstData({ navigation }) {
     <QSixth
       distance={formData.distance}
       setDistance={(value) =>
-        setFormData((prev) => ({ ...prev, distance: value }))
+        setFormData((prev) => ({
+          ...prev,
+          distance: parseInt(value, 10) || "", // 입력값을 정수로 변환, 실패하면 빈 문자열
+        }))
       }
     />,
   ];
@@ -90,13 +93,21 @@ export default function FirstData({ navigation }) {
   };
 
   const handleFinish = async () => {
-    // AsyncStorage에서 인증 토큰을 가져옴
     const token = await AsyncStorage.getItem("authToken");
 
     if (!token) {
       Alert.alert(
         "Error",
         "Authentication token not found. Please login again."
+      );
+      return;
+    }
+
+    // distance 값이 양수인지 확인
+    if (isNaN(formData.distance) || formData.distance <= 0) {
+      Alert.alert(
+        "Error",
+        "Please enter a valid positive number for the distance."
       );
       return;
     }
@@ -109,7 +120,7 @@ export default function FirstData({ navigation }) {
         location: formData.selectedLocation,
         preferred_spot: formData.preferredPlace,
         difficulty: formData.difficulty,
-        distance: formData.distance,
+        distance: formData.distance.toString(), // 문자열 변환
       },
     };
 
@@ -120,13 +131,15 @@ export default function FirstData({ navigation }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // 인증 토큰을 헤더에 포함
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(surveyData),
         }
       );
 
       const data = await response.json();
+      console.log("Response data:", data); // 응답 데이터 확인
+
       if (data.message === "Survey submitted successfully.") {
         Alert.alert("Success", "Survey submitted successfully!");
         navigation.navigate("HomeScreen");
@@ -138,6 +151,7 @@ export default function FirstData({ navigation }) {
       Alert.alert("Error", "An error occurred. Please try again later.");
     }
   };
+
   const submitSurvey = async (token, surveyData) => {
     try {
       const response = await fetch(

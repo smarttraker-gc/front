@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   StatusBar,
+  Animated,
+  Dimensions,
 } from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
+
+const { width, height } = Dimensions.get("window");
 
 /**
  * EndScreen 컴포넌트
@@ -44,6 +48,26 @@ const EndScreen = ({ route, navigation }) => {
       return { value: seconds, unit: "s" };
     }
     return { value: minutes, unit: "m" };
+  };
+
+  const [menuVisible, setMenuVisible] = useState(false);
+  const slideAnimation = useState(new Animated.Value(-width * 0.33))[0];
+
+  const toggleMenu = () => {
+    if (menuVisible) {
+      Animated.timing(slideAnimation, {
+        toValue: -width * 0.33,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setMenuVisible(false));
+    } else {
+      setMenuVisible(true);
+      Animated.timing(slideAnimation, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
   };
 
   /**
@@ -103,20 +127,39 @@ const EndScreen = ({ route, navigation }) => {
     alert("기록이 저장되었습니다!");
 
     // HomeScreen으로 이동 (뒤로 가기 방지를 위해 네비게이션 스택 초기화)
-    navigation.navigate("HomeSreen");
+    navigation.navigate("HomeScreen");
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
-      {/* 앱 상단 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconContainer}>
+        <TouchableOpacity style={styles.iconContainer} onPress={toggleMenu}>
           <Icon name="menu" size={30} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerText}>SmartTracker</Text>
       </View>
+
+      {menuVisible && (
+        <Animated.View
+          style={[
+            styles.menuContainer,
+            { transform: [{ translateX: slideAnimation }] },
+          ]}
+        >
+          {/* 닫기 아이콘 */}
+          <TouchableOpacity
+            style={styles.closeIconContainer}
+            onPress={toggleMenu} // toggleMenu 호출하여 메뉴 닫기
+          >
+            <Icon name="close" size={30} color="#000" />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate("FirstData")}>
+            <Text style={styles.menuItem}>다시 설문하기</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       {/* 운동 결과 표시 섹션 */}
       <View style={styles.infoContainer}>
@@ -212,6 +255,24 @@ const styles = StyleSheet.create({
     color: "#000",
     marginRight: 2,
   },
+  menuContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    height: height,
+    width: width * 0.33,
+    backgroundColor: "#fff",
+    borderRightWidth: 1,
+    borderColor: "#ddd",
+    zIndex: 10,
+    padding: 20,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+  },
+  menuItem: { fontSize: 15, paddingVertical: 10, color: "#333" },
   infoValueUnit: {
     fontSize: 16,
     color: "#666",

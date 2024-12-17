@@ -10,7 +10,7 @@ export default function QSixth({ distance, setDistance }) {
     false,
     false,
   ]);
-  const array = ["1", "5", "10", "15", "20"];
+  const array = [1, 5, 10, 15, 20];
 
   const handleCheck = (index) => {
     const newCheckBoxs = [false, false, false, false, false]; // 모든 체크박스를 해제
