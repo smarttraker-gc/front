@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StatusBar,
   FlatList,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -101,6 +102,7 @@ export default function ChoiceScreen({ navigation, route }) {
 
       // 3단계: WalkScreen으로 상세 정보 전달
       navigation.navigate("WalkScreen", { guideData });
+      Alert.alert("목적지를 누르면 길찾기가 실행됩니다.");
     } catch (error) {
       console.error("경로 선택 중 오류 발생:", error);
     }
@@ -158,9 +160,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   selectedPathItem: {
-    backgroundColor: "#d4e6f5",
+    backgroundColor: "#D2DBFF",
     borderWidth: 2,
-    borderColor: "#6a95f4",
+    borderColor: "#a7b5f5",
   },
   pathName: { fontSize: 18, fontWeight: "bold", color: "#333" },
   pathDetails: { fontSize: 14, color: "#666" },

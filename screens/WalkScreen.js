@@ -6,12 +6,16 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
+  Linking,
+  Dimensions,
+  Animated,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import Icon from "@expo/vector-icons/Ionicons";
 import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
 
+const { width, height } = Dimensions.get("window");
 /**
  * WalkScreen 컴포넌트
  * 사용자의 실시간 운동 현황을 추적하고 표시하는 화면
@@ -29,6 +33,7 @@ import { useNavigation } from "@react-navigation/native";
 
 const WalkScreen = ({ route }) => {
   const { guideData } = route.params;
+  const slideAnimation = useState(new Animated.Value(-width * 0.33))[0];
   // 상태 관리
   const navigation = useNavigation();
   const [elapsedTime, setElapsedTime] = useState(0); // 경과 시간 (초)
@@ -36,6 +41,24 @@ const WalkScreen = ({ route }) => {
   const [lastPosition, setLastPosition] = useState(null); // 마지막 위치 정보
   const [isPaused, setIsPaused] = useState(false); // 일시정지 상태
   const webViewRef = useRef(null); // 카카오맵 WebView 참조
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const toggleMenu = () => {
+    if (menuVisible) {
+      Animated.timing(slideAnimation, {
+        toValue: -width * 0.33,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setMenuVisible(false));
+    } else {
+      setMenuVisible(true);
+      Animated.timing(slideAnimation, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
 
   //console.log("받아온 가이드 데이터:", guideData);
   //console.log("위도", guideData.trail.latitude);
@@ -89,14 +112,15 @@ const WalkScreen = ({ route }) => {
                             
                             // 경로 표시를 위한 폴리라인 설정
                             window.polyline = new kakao.maps.Polyline({
-                                path: [],
+                                path: [new kakao.maps.LatLng(lat, lng),
+                            new kakao.maps.LatLng(${guideData.trail.latitude}, ${guideData.trail.longitude})],
                                 strokeWeight: 5,
                                 strokeColor: '#a7b5f5',
                                 strokeOpacity: 0.7,
                                 strokeStyle: 'solid'
                             });
                             window.polyline.setMap(window.map);
-                            /* 추천 경로 표시 기능
+                            // 추천 경로 표시 기능
                             // 추천 경로용 폴리라인 설정
                             // 실제 이동 경로와 구분하기 위해 초록색 점선으로 표시
                             window.recommendedPath = new kakao.maps.Polyline({
@@ -116,46 +140,70 @@ const WalkScreen = ({ route }) => {
                                 );
                                 window.recommendedPath.setPath(path);
                             };
-                            */
+                            
                             window.ReactNativeWebView.postMessage('MAP_INITIALIZED');
                         } catch (error) {
                             console.error('Map initialization error:', error);
                             window.ReactNativeWebView.postMessage('MAP_INIT_ERROR: ' + error.message);
                         }
                     };
+// 위치 업데이트 함수 정의
+ window.updatePosition = function(lat, lng) {
+    try {
+        if (!window.map || !window.polyline) {
+            console.error('Map not initialized');
+            return;
+        }
+        
+        const position = new kakao.maps.LatLng(lat, lng);  // 현재 위치
+        const position1 = new kakao.maps.LatLng(${guideData.trail.latitude}, ${guideData.trail.longitude});  // 고정 위치
+        
+        // 이동 경로 업데이트
+        const path = window.polyline.getPath();
+        path.push(position);
+        path.push(position1);
+        window.polyline.setPath(path);
+        
+        // 현재 위치 마커 관리
+        if (!window.currentMarker) {
+            window.currentMarker = new kakao.maps.Marker({
+                position: position,
+                map: window.map,
+                title: "현재 위치", // 마커 툴팁
+            });
+        } else {
+            window.currentMarker.setPosition(position);
+        }
+        
+        // 고정 위치 마커 관리
+        if (!window.fixedMarker) {
+            window.fixedMarker = new kakao.maps.Marker({
+                position: position1,
+                map: window.map,
+                title: "고정 위치", 
+            });
 
-                    // 위치 업데이트 함수 정의
-                    window.updatePosition = function(lat, lng) {
-                        try {
-                            if (!window.map || !window.polyline) {
-                                console.error('Map not initialized');
-                                return;
-                            }
-                            
-                           const position = [new kakao.maps.LatLng(lat, lng),
-                            new kakao.maps.LatLng(${guideData.trail.latitude}, ${guideData.trail.longitude})];
-                            
-                            // 이동 경로 업데이트
-                            const path = window.polyline.getPath();
-                            path.push(position);
-                            window.polyline.setPath(path);
-                            
-                            // 지도 중심 이동
-                            window.map.setCenter(position);
-                            
-                            // 현재 위치 마커 관리
-                            if (!window.currentMarker) {
-                                window.currentMarker = new kakao.maps.Marker({
-                                    position: position,
-                                    map: window.map
-                                });
-                            } else {
-                                window.currentMarker.setPosition(position);
-                            }
-                        } catch (error) {
-                            console.error('Position update error:', error);
-                        }
-                    };
+            // 고정 위치 마커 클릭 이벤트 추가
+            kakao.maps.event.addListener(window.fixedMarker, 'click', function() {
+                window.ReactNativeWebView.postMessage("openUrl");
+            });
+        } else {
+            window.fixedMarker.setPosition(position1);
+        }
+        
+        // 지도 중심을 현재 위치와 고정 위치의 중간으로 설정
+        const centerLat = (lat + guideData.trail.latitude) / 2;
+        const centerLng = (lng + guideData.trail.longitude) / 2;
+        const centerPosition = new kakao.maps.LatLng(centerLat, centerLng);
+        window.map.setCenter(centerPosition);  // 지도 중심 이동
+        
+    } catch (error) {
+        console.error('Position update error:', error);
+    }
+};
+
+
+
                 }
 
                 // 초기화 시작
@@ -179,6 +227,17 @@ const WalkScreen = ({ route }) => {
    * - 이동 거리 계산
    * - 마지막 위치 정보 저장
    */
+
+  const onMessage = (event) => {
+    const message = event.nativeEvent.data;
+
+    if (message === "openUrl" && guideData.kakao_map_url) {
+      Linking.openURL(guideData.kakao_map_url).catch((err) =>
+        console.error("Failed to open URL: ", err)
+      );
+    }
+  };
+
   useEffect(() => {
     let locationSubscription = null;
 
@@ -369,14 +428,32 @@ const WalkScreen = ({ route }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
-      {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconContainer}>
+        <TouchableOpacity style={styles.iconContainer} onPress={toggleMenu}>
           <Icon name="menu" size={30} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerText}>SmartTracker</Text>
       </View>
+
+      {menuVisible && (
+        <Animated.View
+          style={[
+            styles.menuContainer,
+            { transform: [{ translateX: slideAnimation }] },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.closeIconContainer}
+            onPress={toggleMenu}
+          >
+            <Icon name="close" size={30} color="#000" />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate("FirstData")}>
+            <Text style={styles.menuItem}>다시 설문하기</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       {/* 지도 */}
       <View style={styles.mapContainer}>
@@ -385,6 +462,7 @@ const WalkScreen = ({ route }) => {
           source={{ html: HTML_CONTENT }}
           style={styles.map}
           javaScriptEnabled={true}
+          onMessage={onMessage}
           onError={(syntheticEvent) => {
             const { nativeEvent } = syntheticEvent;
             console.warn("WebView error: ", nativeEvent);
@@ -527,9 +605,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 20,
   },
-  buttonText: {
-    fontSize: 18,
-  },
+  buttonText: { fontSize: 16, color: "white", fontWeight: "bold" },
 });
 
 export default WalkScreen;

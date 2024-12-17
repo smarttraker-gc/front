@@ -141,7 +141,7 @@ export default function FirstData({ navigation }) {
       console.log("Response data:", data); // 응답 데이터 확인
 
       if (data.message === "Survey submitted successfully.") {
-        Alert.alert("Success", "Survey submitted successfully!");
+        Alert.alert("성공", "설문이 완료되었습니다!");
         navigation.navigate("HomeScreen");
       } else {
         Alert.alert("Error", "There was an issue submitting the survey.");

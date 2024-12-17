@@ -7,6 +7,7 @@ import {
   StatusBar,
   Animated,
   Dimensions,
+  Alert,
 } from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
 
@@ -123,8 +124,7 @@ const EndScreen = ({ route, navigation }) => {
     console.log(`  - 소모 칼로리: ${Math.round(calories)}kcal`);
     console.log("===================\n");
 
-    // 사용자 피드백 제공
-    alert("기록이 저장되었습니다!");
+    Alert.alert("기록이 저장되었습니다!");
 
     // HomeScreen으로 이동 (뒤로 가기 방지를 위해 네비게이션 스택 초기화)
     navigation.navigate("HomeScreen");
