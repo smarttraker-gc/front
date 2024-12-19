@@ -98,17 +98,14 @@ export default function FirstData({ navigation }) {
     if (!token) {
       Alert.alert(
         "Error",
-        "Authentication token not found. Please login again."
+        "로그인 시간이 초과되었습니다. 다시 로그인해주세요."
       );
       return;
     }
 
     // distance 값이 양수인지 확인
     if (isNaN(formData.distance) || formData.distance <= 0) {
-      Alert.alert(
-        "Error",
-        "Please enter a valid positive number for the distance."
-      );
+      Alert.alert("Error", "거리가 입력되지 않았습니다.");
       return;
     }
 
@@ -144,7 +141,7 @@ export default function FirstData({ navigation }) {
         Alert.alert("성공", "설문이 완료되었습니다!");
         navigation.navigate("HomeScreen");
       } else {
-        Alert.alert("Error", "There was an issue submitting the survey.");
+        Alert.alert("Error", "설문이 완료되지 않았습니다.");
       }
     } catch (error) {
       console.error("Error submitting survey:", error);

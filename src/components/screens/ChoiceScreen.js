@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function ChoiceScreen({ navigation, route }) {
+export default function ChoiceScreen({ navigation }) {
   const [recommendations, setRecommendations] = useState([]);
   const [selectedPath, setSelectedPath] = useState(null);
 

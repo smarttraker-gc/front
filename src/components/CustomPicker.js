@@ -77,7 +77,6 @@ const CustomPicker = ({
             <Text style={styles.headerTitle}>{title}</Text>
             <TouchableOpacity
               onPress={() => {
-                // 먼저 값을 업데이트하고 나서 모달을 닫습니다
                 onConfirm(value);
                 onClose();
               }}

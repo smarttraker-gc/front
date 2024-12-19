@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import Icon from "@expo/vector-icons/Ionicons";
-import CustomPicker from "../src/components/CustomPicker";
+import CustomPicker from "../CustomPicker";
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -20,7 +20,7 @@ const { width, height } = Dimensions.get("window");
 const HomeScreen = ({ navigation }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const slideAnimation = useState(new Animated.Value(-width * 0.33))[0];
-  const [loading, setLoading] = useState(false); // 로딩 상태 추가
+  const [loading, setLoading] = useState(false);
 
   const toggleMenu = () => {
     if (menuVisible) {
@@ -39,8 +39,6 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const [goal, setGoal] = useState("diet");
-  const [time, setTime] = useState(30);
   const [distance, setDistance] = useState(5);
 
   const [showDistancePicker, setShowDistancePicker] = useState(false);

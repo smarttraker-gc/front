@@ -4,10 +4,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./src/components/Login";
 import SignUp from "./src/components/SignUp";
 import FirstData from "./src/components/FirstData";
-import HomeScreen from "./screens/HomeScreen";
-import WalkScreen from "./screens/WalkScreen";
-import EndScreen from "./screens/EndScreen";
-import ChoiceScreen from "./screens/ChoiceScreen";
+import HomeScreen from "./src/components/screens/HomeScreen";
+import WalkScreen from "./src/components/screens/WalkScreen";
+import EndScreen from "./src/components/screens/EndScreen";
+import ChoiceScreen from "./src/components/screens/ChoiceScreen";
 
 const Stack = createNativeStackNavigator();
 
