@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { TextInput } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // AsyncStorage import
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login({ navigation }) {
   const [pwVisible, setPWVisible] = useState(false);
@@ -27,15 +27,32 @@ export default function Login({ navigation }) {
       const data = await response.json();
 
       if (response.ok) {
-        // 인증 토큰을 AsyncStorage에 저장
         await AsyncStorage.setItem("authToken", data.token);
 
-        Alert.alert("로그인 성공", "환영합니다!", [
+        const surveyResponse = await fetch(
+          "http://210.102.178.98:60032/api/survey/check-survey",
           {
-            text: "확인",
-            onPress: () => navigation.navigate("FirstData"),
-          },
-        ]);
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${data.token}`,
+            },
+          }
+        );
+
+        const surveyData = await surveyResponse.json();
+
+        if (surveyResponse.ok) {
+          if (surveyData.hasSurvey) {
+            navigation.navigate("HomeScreen");
+          } else {
+            navigation.navigate("FirstData");
+          }
+        } else {
+          Alert.alert(
+            "오류",
+            surveyData.message || "설문조사 상태를 확인할 수 없습니다."
+          );
+        }
       } else {
         Alert.alert(
           "로그인 실패",

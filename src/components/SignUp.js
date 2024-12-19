@@ -103,7 +103,7 @@ export default function SignUp() {
           style={[styles.textInput, styles.flexInput]}
           onChangeText={(text) => {
             setId(text);
-            setIsDuplicate(null); // 아이디 변경 시 중복 상태 초기화
+            setIsDuplicate(null);
           }}
         />
         <TouchableOpacity

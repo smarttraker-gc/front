@@ -199,15 +199,23 @@ const HomeScreen = ({ navigation }) => {
             { transform: [{ translateX: slideAnimation }] },
           ]}
         >
-          <TouchableOpacity
-            style={styles.closeIconContainer}
-            onPress={toggleMenu}
-          >
-            <Icon name="close" size={30} color="#000" />
-          </TouchableOpacity>
+          <View>
+            <TouchableOpacity
+              style={styles.closeIconContainer}
+              onPress={toggleMenu}
+            >
+              <Icon name="close" size={30} color="#000" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("FirstData")}>
+              <Text style={styles.menuItem}>다시 설문하기</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate("FirstData")}>
-            <Text style={styles.menuItem}>다시 설문하기</Text>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={styles.menuItem}>로그아웃</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -268,8 +276,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
+    justifyContent: "space-between",
   },
-  menuItem: { fontSize: 15, paddingVertical: 10, color: "#333" },
+  menuItem: {
+    fontSize: 15,
+    color: "#000",
+    marginVertical: 10,
+  },
   content: { flex: 1, paddingTop: 180, paddingHorizontal: 20 },
   label: { fontSize: 18, marginBottom: 10, color: "#000" },
   pickerButton: {
@@ -289,6 +302,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignSelf: "center",
     marginTop: 20,
+  },
+  closeIconContainer: {
+    alignSelf: "flex-end",
+  },
+  logoutButton: {
+    alignSelf: "flex-end",
+    marginBottom: 20,
   },
   buttonText: { fontSize: 16, color: "white", fontWeight: "bold" },
 });

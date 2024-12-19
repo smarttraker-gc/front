@@ -25,11 +25,6 @@ export default function ChoiceScreen({ navigation, route }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          // body: JSON.stringify({
-          //   latitude: route.params.latitude,
-          //   longitude: route.params.longitude,
-          //   distance: route.params.distance,
-          // }),
         }
       );
 
@@ -46,7 +41,7 @@ export default function ChoiceScreen({ navigation, route }) {
   };
 
   const parseRecommendation = (recommendationText) => {
-    const lines = recommendationText.split("\n").slice(3); // Skip first three lines
+    const lines = recommendationText.split("\n").slice(3);
     return lines.map((line) => {
       const [id, category, name, distance] = line.trim().split(/\s{2,}/);
       return { id, category, name, distance: parseFloat(distance).toFixed(2) };
@@ -59,9 +54,8 @@ export default function ChoiceScreen({ navigation, route }) {
 
   const confirmPathSelection = async () => {
     const token = await AsyncStorage.getItem("authToken");
-    console.log("선택된 경로 ID:", selectedPath.category); // 선택된 ID 출력
+    console.log("선택된 경로 ID:", selectedPath.category);
     try {
-      // 1단계: 선택한 경로 ID 서버로 전송
       const response = await fetch(
         "http://210.102.178.98:60032/api/survey/select-route",
         {
@@ -71,7 +65,7 @@ export default function ChoiceScreen({ navigation, route }) {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            selected_trail_id: selectedPath.category, // 선택된 산책로 ID 전달
+            selected_trail_id: selectedPath.category,
           }),
         }
       );
@@ -82,7 +76,6 @@ export default function ChoiceScreen({ navigation, route }) {
 
       console.log("선택한 경로가 서버에 성공적으로 전송되었습니다.");
 
-      // 2단계: GET 요청으로 상세 경로 정보 가져오기
       const guideResponse = await fetch(
         "http://210.102.178.98:60032/api/survey/route-guide",
         {
@@ -100,7 +93,6 @@ export default function ChoiceScreen({ navigation, route }) {
       const guideData = await guideResponse.json();
       console.log("경로 가이드 데이터:", guideData);
 
-      // 3단계: WalkScreen으로 상세 정보 전달
       navigation.navigate("WalkScreen", { guideData });
       Alert.alert("목적지를 누르면 길찾기가 실행됩니다.");
     } catch (error) {

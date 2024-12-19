@@ -147,20 +147,26 @@ const EndScreen = ({ route, navigation }) => {
             { transform: [{ translateX: slideAnimation }] },
           ]}
         >
-          {/* 닫기 아이콘 */}
-          <TouchableOpacity
-            style={styles.closeIconContainer}
-            onPress={toggleMenu} // toggleMenu 호출하여 메뉴 닫기
-          >
-            <Icon name="close" size={30} color="#000" />
-          </TouchableOpacity>
+          <View>
+            <TouchableOpacity
+              style={styles.closeIconContainer}
+              onPress={toggleMenu}
+            >
+              <Icon name="close" size={30} color="#000" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("FirstData")}>
+              <Text style={styles.menuItem}>다시 설문하기</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate("FirstData")}>
-            <Text style={styles.menuItem}>다시 설문하기</Text>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={styles.menuItem}>로그아웃</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
-
       {/* 운동 결과 표시 섹션 */}
       <View style={styles.infoContainer}>
         {/* 시간, 거리, 칼로리 정보 행 */}
@@ -174,7 +180,6 @@ const EndScreen = ({ route, navigation }) => {
             </View>
           </View>
           <View style={styles.divider} />
-          {/* 이동 거리 */}
           <View style={styles.infoColumn}>
             <Text style={styles.infoLabel}>거리</Text>
             <View style={styles.valueContainer}>
@@ -183,7 +188,6 @@ const EndScreen = ({ route, navigation }) => {
             </View>
           </View>
           <View style={styles.divider} />
-          {/* 소모 칼로리 */}
           <View style={styles.infoColumn}>
             <Text style={styles.infoLabel}>칼로리</Text>
             <View style={styles.valueContainer}>
@@ -192,7 +196,6 @@ const EndScreen = ({ route, navigation }) => {
             </View>
           </View>
         </View>
-        {/* 기록 저장 버튼 */}
         <TouchableOpacity style={styles.recordButton} onPress={handleRecord}>
           <Text style={styles.recordButtonText}>기 록</Text>
         </TouchableOpacity>
@@ -271,8 +274,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
+    justifyContent: "space-between",
   },
-  menuItem: { fontSize: 15, paddingVertical: 10, color: "#333" },
+  menuItem: {
+    fontSize: 15,
+    color: "#000",
+    marginVertical: 10,
+  },
   infoValueUnit: {
     fontSize: 16,
     color: "#666",
@@ -294,6 +302,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "white",
     fontWeight: "bold",
+  },
+  logoutButton: {
+    alignSelf: "flex-end",
+    marginBottom: 20,
   },
 });
 
